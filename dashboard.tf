@@ -1,5 +1,7 @@
-resource "newrelic_one_dashboard" "k8s-optimizer" {
+resource "newrelic_one_dashboard" "k8s_optimizer" {
   name = "k8s Optimizer"
+
+  permissions = "public_read_only"
 
   page {
     name = "k8s Optimizer"
@@ -70,10 +72,10 @@ resource "newrelic_one_dashboard" "k8s-optimizer" {
 
       nrql_query {
         query = <<-EOT
-        SELECT percentile(cpuUsedCores, 95) * (1 + (var.cpu_request_margin)/100) AS 'CPU request', 
-        percentile(cpuUsedCores, 95) * (1 + (var.cpu_limit_margin)/100) AS 'CPU limit', 
-        percentile(memoryUsedBytes/1024/1024, 95) * (1 + (var.memory_request_margin)/100) AS 'Memory request (MB)', 
-        percentile(memoryUsedBytes/1024/1024, 95) * (1 + (var.memory_limit_margin)/100) AS 'Memory limit (MB)' 
+        SELECT percentile(cpuUsedCores, 95) * (1 + ${var.cpu_request_margin}/100) AS 'CPU request', 
+        percentile(cpuUsedCores, 95) * (1 + ${var.cpu_limit_margin}/100) AS 'CPU limit', 
+        percentile(memoryUsedBytes/1024/1024, 95) * (1 + ${var.memory_request_margin}/100) AS 'Memory request (MB)', 
+        percentile(memoryUsedBytes/1024/1024, 95) * (1 + ${var.memory_limit_margin}/100) AS 'Memory limit (MB)' 
         FROM K8sContainerSample SINCE 1 week ago
         EOT
       }
@@ -103,7 +105,7 @@ resource "newrelic_one_dashboard" "k8s-optimizer" {
 
       **Use the suggestions as a recommendation for review, and test well before shipping to Production.**
 
-      # Explanation
+      ## Explanation
 
       **The mechanics behind k8s resources are explained here:** https://blog.kubecost.com/blog/requests-and-limits/
       EOT
@@ -118,10 +120,10 @@ resource "newrelic_one_dashboard" "k8s-optimizer" {
 
       nrql_query {
         query = <<-EOT
-        SELECT latest(cpuRequestedCores) - (percentile(cpuUsedCores, 95) * (1 + (var.cpu_request_margin)/100)) AS 'CPU request', 
-        latest(cpuLimitCores) - (percentile(cpuUsedCores, 95) * (1 + (var.cpu_limit_margin)/100)) AS 'CPU limit', 
-        latest(memoryRequestedBytes/1024/1024) - (percentile(memoryUsedBytes/1024/1024, 95) * (1 + (var.memory_request_margin)/100)) AS 'Memory request (MB)', 
-        latest(memoryLimitBytes/1024/1024) - (percentile(memoryUsedBytes/1024/1024, 95) * (1 + (var.memory_limit_margin)/100)) AS 'Memory limit (MB)' 
+        SELECT latest(cpuRequestedCores) - (percentile(cpuUsedCores, 95) * (1 + ${var.cpu_request_margin}/100)) AS 'CPU request', 
+        latest(cpuLimitCores) - (percentile(cpuUsedCores, 95) * (1 + ${var.cpu_limit_margin}/100)) AS 'CPU limit', 
+        latest(memoryRequestedBytes/1024/1024) - (percentile(memoryUsedBytes/1024/1024, 95) * (1 + ${var.memory_request_margin}/100)) AS 'Memory request (MB)', 
+        latest(memoryLimitBytes/1024/1024) - (percentile(memoryUsedBytes/1024/1024, 95) * (1 + ${var.memory_limit_margin}/100)) AS 'Memory limit (MB)' 
         FROM K8sContainerSample SINCE 1 week ago
         EOT
       }
@@ -151,7 +153,7 @@ resource "newrelic_one_dashboard" "k8s-optimizer" {
       width = 6
 
       nrql_query {
-        query = "SELECT percentile(cpuUsedCores, 95) FROM K8sContainerSample SINCE 1 week ago FACET containerID TIMESERIES MAX LIMIT MAX"
+        query = "SELECT percentile(cpuUsedCores, 95) FROM K8sContainerSample SINCE 1 week ago FACET containerID TIMESERIES AUTO LIMIT MAX"
       }
     }
 
@@ -163,7 +165,7 @@ resource "newrelic_one_dashboard" "k8s-optimizer" {
       width = 6
 
       nrql_query {
-        query = "SELECT percentile(memoryUsedBytes/1024/1024, 95) FROM K8sContainerSample SINCE 1 week ago FACET containerID TIMESERIES MAX LIMIT MAX"
+        query = "SELECT percentile(memoryUsedBytes/1024/1024, 95) FROM K8sContainerSample SINCE 1 week ago FACET containerID TIMESERIES AUTO LIMIT MAX"
       }
     }
 
@@ -177,14 +179,14 @@ resource "newrelic_one_dashboard" "k8s-optimizer" {
       nrql_query {
         query = <<-EOT
         SELECT latest(cpuRequestedCores) AS 'current CPU request', 
-        percentile(cpuUsedCores, 95) * (1 + (var.cpu_request_margin)/100) AS 'suggested CPU request', 
+        percentile(cpuUsedCores, 95) * (1 + ${var.cpu_request_margin}/100) AS 'suggested CPU request', 
         latest(cpuLimitCores) AS 'current CPU limit', 
-        percentile(cpuUsedCores, 95) * (1 + (var.cpu_limit_margin)/100) AS 'suggested CPU limit', 
+        percentile(cpuUsedCores, 95) * (1 + ${var.cpu_limit_margin}/100) AS 'suggested CPU limit', 
         average(containerCpuCfsThrottledPeriodsDelta) AS 'Avg. Throttles', 
         latest(memoryRequestedBytes/1024/1024) AS 'current Memory request (MB)', 
-        percentile(memoryUsedBytes/1024/1024, 95) * (1 + (var.memory_request_margin)/100) AS 'suggested Memory request (MB)', 
+        percentile(memoryUsedBytes/1024/1024, 95) * (1 + ${var.memory_request_margin}/100) AS 'suggested Memory request (MB)', 
         latest(memoryLimitBytes/1024/1024) AS 'current Memory limit (MB)', 
-        percentile(memoryUsedBytes/1024/1024, 95) * (1 + (var.memory_limit_margin)/100) AS 'suggested Memory limit (MB)', 
+        percentile(memoryUsedBytes/1024/1024, 95) * (1 + ${var.memory_limit_margin}/100) AS 'suggested Memory limit (MB)', 
         average(restartCount) AS 'Avg. Restarts'
         FROM K8sContainerSample SINCE 1 month ago 
         FACET namespace, containerName AS 'Container', clusterName AS 'Cluster' 
@@ -193,4 +195,9 @@ resource "newrelic_one_dashboard" "k8s-optimizer" {
       }
     }
   }
+}
+
+output "dashboard_url" {
+  description = "A permalink to your Dashboard"
+  value = newrelic_one_dashboard.k8s_optimizer.permalink
 }
