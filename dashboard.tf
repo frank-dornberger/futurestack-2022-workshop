@@ -141,7 +141,7 @@ resource "newrelic_one_dashboard" "k8s_optimizer" {
       width = 8
 
       nrql_query {
-        query = "SELECT sum(restartCount) FROM K8sContainerSample SINCE 1 week ago FACET containerName TIMESERIES MAX"
+        query = "SELECT sum(restartCount) FROM K8sContainerSample WHERE reason = 'OOMKilled' SINCE 1 week ago FACET containerName TIMESERIES MAX"
       }
     }
 
