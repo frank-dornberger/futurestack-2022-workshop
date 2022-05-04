@@ -32,6 +32,12 @@ variable "cpu_request_margin" {
   type = number
 }
 
+variable "cpu_threshold" {
+  default = 95
+  description = "The percentile of CPU utilization to use for the calculations. Default is 95."
+  type = number
+}
+
 variable "memory_limit_margin" {
   default = 100
   description = "The percentage to keep as a margin for Memory above the TP95 consumption for the resource limit. Default is 100."
@@ -41,5 +47,11 @@ variable "memory_limit_margin" {
 variable "memory_request_margin" {
   default = 50
   description = "The percentage to keep as a margin for Memory above the TP95 consumption for the resource request. Default is 50."
+  type = number
+}
+
+variable "memory_threshold" {
+  default = 95
+  description = "The percentile of CPU utilization to use for the calculations. Default is 95."
   type = number
 }
