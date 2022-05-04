@@ -28,7 +28,7 @@ variable "cpu_limit_margin" {
 
 variable "cpu_request_margin" {
   default = 50
-  description = "The percentage to keep as a margin for CPU above the TP95 consumption for the resource request. Default is 100."
+  description = "The percentage to keep as a margin for CPU above the TP95 consumption for the resource request. Default is 50."
   type = number
 }
 
@@ -40,6 +40,6 @@ variable "memory_limit_margin" {
 
 variable "memory_request_margin" {
   default = 50
-  description = "The percentage to keep as a margin for Memory above the TP95 consumption for the resource request. Default is 100."
+  description = "The percentage to keep as a margin for Memory above the TP95 consumption for the resource request. Default is 50."
   type = number
 }
