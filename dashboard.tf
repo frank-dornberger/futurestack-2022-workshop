@@ -134,14 +134,14 @@ resource "newrelic_one_dashboard" "k8s_optimizer" {
     }
 
     widget_line {
-      title = "Contra Indication to reduce Memory limit: High number of Restarts"
+      title = "Contra Indication to reduce Memory limit: High number of Out of Memory Kills"
       row = 7
       height = 3
       column = 5
       width = 8
 
       nrql_query {
-        query = "SELECT sum(restartCount) FROM K8sContainerSample SINCE 1 week ago FACET containerName TIMESERIES MAX"
+        query = "SELECT count(*) FROM K8sContainerSample WHERE reason = 'OOMKilled' SINCE 1 week ago FACET containerName TIMESERIES MAX"
       }
     }
 
@@ -187,7 +187,7 @@ resource "newrelic_one_dashboard" "k8s_optimizer" {
         percentile(memoryUsedBytes/1024/1024, ${var.memory_threshold}) * (1 + ${var.memory_request_margin}/100) AS 'suggested Memory request (MB)', 
         latest(memoryLimitBytes/1024/1024) AS 'current Memory limit (MB)', 
         percentile(memoryUsedBytes/1024/1024, ${var.memory_threshold}) * (1 + ${var.memory_limit_margin}/100) AS 'suggested Memory limit (MB)', 
-        average(restartCount) AS 'Avg. Restarts'
+        filter(count(*), WHERE reason = 'OOMKilled') AS 'Out of Memory Kills'
         FROM K8sContainerSample SINCE 1 month ago 
         FACET namespace, containerName AS 'Container', clusterName AS 'Cluster' 
         LIMIT MAX
